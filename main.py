@@ -1,6 +1,5 @@
 from flask import Flask, request, redirect, render_template
 import cgi
-import os
 import re
 
 app = Flask(__name__)
@@ -42,13 +41,23 @@ def validate_input():
     if not password == pwd_chk:
         pwd_match_error = "Your passwords did not match, please type carefully!"
     
-    
     # Validate email:
-    #if email:
-
+    if email:
+        # Check for spaces in email address
+        if " " in email: 
+            email_error = "The email address cannot contain spaces."
+            email = ""
+        
+        # Check for valid email formatting
+        is_valid_email = re.match("[^@]+@[^@]+\.[^@]+", email)
+        if not is_valid_email:
+            email_error = "The email address you entered is not a valid email."
+            email = ""
+        
+    # If no errors are present, render welcome, else redisplay form w/ errors
     if not username_error and not password_error and not pwd_match_error and not email_error:
-        return render_template('welcome.html', username = username)
+        return render_template('welcome.html', title = "Welcome!", username = username)
     else:
-        return render_template('signup.html', username_error = username_error, password_error = password_error, pwd_match_error = pwd_match_error)
+        return render_template('signup.html', title = "User Signup", username_error = username_error, password_error = password_error, pwd_match_error = pwd_match_error, email_error = email_error, username = username, email = email)
         
 app.run()
